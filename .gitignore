@@ -38,3 +38,6 @@ build/
 
 ### Mac OS ###
 .DS_Store
+# Default ignored files
+/shelf/
+/workspace.xml
