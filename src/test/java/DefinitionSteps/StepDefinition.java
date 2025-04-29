@@ -2,6 +2,7 @@ package DefinitionSteps;
 import Page.*;
 import io.cucumber.java.After;
 import io.cucumber.java.Before;
+import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
@@ -70,11 +71,11 @@ public class StepDefinition {
     public void enter_in_the_username_field_on_login_screen(String username) {
         pomLoginPage.userName().sendKeys(username);
     }
-    @When("Enter  {string} in the password field on Login Screen")
+    @And("Enter  {string} in the password field on Login Screen")
     public void enter_in_the_password_field_on_login_screen(String password) {
         pomLoginPage.passWord().sendKeys(password);
     }
-    @When("Press the login button")
+    @And("Press the login button")
     public void press_the_login_button() {
         pomLoginPage.loginButton().click();
     }
@@ -82,8 +83,7 @@ public class StepDefinition {
     public void successful_login() {
         String expectUrl="https://www.saucedemo.com/v1/inventory.html";
         String currentUrl=pomHomePage.pageUrl();
-        Assert.assertEquals( "home page url" , expectUrl , currentUrl);
-    }
+        Assert.assertEquals( "home page url" ,expectUrl,currentUrl);}
     @Given("Press the sorting drop down")
     public void press_the_sorting_drop_down() {
         pomHomePage.sortingDropDown().click();
@@ -235,7 +235,7 @@ public class StepDefinition {
             Assert.fail("Failed to parse the actual price: " + totalPriceText + " - " + e.getMessage());
         }
     }
-    @Then("Wait for {int}")
+    @And("Wait for {int}")
     public void wait_for(int seconds) {
         try {
             Thread.sleep(seconds*1000);
@@ -295,7 +295,6 @@ public class StepDefinition {
         catch(Exception e){
             System.out.println("UnExpected Error : remove  button of the sauce labs fleece jacket is not display ");
         }
-
     }
     @Then("cart number change to {string} item")
     public void cart_number_change_to_item(String count) {
@@ -303,4 +302,18 @@ public class StepDefinition {
         Assert.assertEquals("the cart item count is not updated", count, counterCart);
     }
 
+    @Given("The sauce labs Bolt T-Shirt item is available")
+    public void theSauceLabsBoltTShirtItemIsAvailable() {
+        assertTrue("the sauce labs bolt t-shirt is not displayed",pomHomePage.sauceLabsBoltTShirt().isDisplayed());
+    }
+
+    @When("Press add to cart for Sauce Labs Bolt T-Shirt")
+    public void pressAddToCartForSauceLabsBoltTShirt() {
+        try{
+            pomHomePage.sauceLabsBoltTShirt().click();
+        }
+        catch (Exception e){
+            assertTrue("there is no element sauce labs bolt t-shirt " , false);
+        }
+    }
 }

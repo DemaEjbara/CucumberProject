@@ -64,7 +64,7 @@ public class HomePage {
     }
 
     public WebElement sauceLabsBoltTShirt(){
-        return driver.findElement(By.xpath("//*[@id=\"inventory_container\"]/div/div[3]/div[3]/button"));
+        return driver.findElement(By.xpath("//div[text()=\"Sauce Labs Bike Light\"]//parent::a//parent::div//following-sibling::div[@class='pricebar']//following::div[1]//child::button"));
 
     }
     public WebElement sauceLabsBackpackImg(){
