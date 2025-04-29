@@ -12,7 +12,15 @@ Feature: Verify that the existing problems in swag labs website
     Given I click on add to cart button for Sauce Labs Fleece Jacket
     And Wait for 3
     When Add to cart changed to remove
+    And Wait for 3
     Then cart number changes to "1"
+
+    Scenario: adding the Sauce labs Bolt T-Shirt from cart
+      Given The sauce labs Bolt T-Shirt item is available
+      When Press add to cart for Sauce Labs Bolt T-Shirt
+      And Wait for 3
+      Then cart number changes to "1"
+
 
 
 
