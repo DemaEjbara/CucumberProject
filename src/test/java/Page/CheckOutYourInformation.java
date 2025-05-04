@@ -27,4 +27,6 @@ public class CheckOutYourInformation {
     public WebElement pageTitle(){
         return driver.findElement(By.xpath("//*[@id=\"contents_wrapper\"]/div[2 and contains(text(), 'Checkout: Your Information')]')]"));
     }
+
+
 }

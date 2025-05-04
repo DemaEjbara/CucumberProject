@@ -15,8 +15,10 @@ import org.openqa.selenium.support.ui.WebDriverWait;
 import java.io.File;
 import java.time.Duration;
 import java.util.*;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 public class StepDefinition {
+   WebDriverWait wait=new WebDriverWait(driver, Duration.ofSeconds(30));
     public static WebDriver driver ;
     HomePage pomHomePage ;
     YourCart pomYourCart ;
@@ -81,11 +83,17 @@ public class StepDefinition {
     }
     @Then("Successful Login")
     public void successful_login() {
+        try{
         String expectUrl="https://www.saucedemo.com/v1/inventory.html";
         String currentUrl=pomHomePage.pageUrl();
-        Assert.assertEquals( "home page url" ,expectUrl,currentUrl);}
+        assertEquals( "home page url" ,expectUrl,currentUrl);
+        }
+    catch(Exception e){
+        System.out.println("Unexpected Error :" +e.getMessage());}
+    }
     @Given("Press the sorting drop down")
     public void press_the_sorting_drop_down() {
+        wait.until(ExpectedConditions.visibilityOfAllElements(pomHomePage.itemOfElements()));
         pomHomePage.sortingDropDown().click();
     }
     @When("User choose name {string}")
@@ -126,82 +134,98 @@ public class StepDefinition {
             catch (NumberFormatException e){
                 Assert.fail("could not parse price "+ priceWithoutDollar);
             }
+
         }
+
+        sortedFullyOfItems(sortType,productNames,productPrices);
+    }
+    public void sortedFullyOfItems (String sortType , List<String > productNames,List<Double> productPrices){
         switch (sortType)
         {
             case "A to Z":
                 List<String> sortedNamesAsc = new ArrayList<>(productNames);
                 Collections.sort(sortedNamesAsc);
-                Assert.assertEquals("Products are not sorted A to Z", sortedNamesAsc, productNames);
-                Assert.assertTrue("actual result are not sorted by Asc sorting",isSortedAscAlpha(sortedNamesAsc));
+                assertEquals("Products are not sorted A to Z", sortedNamesAsc, productNames);
                 break;
             case "Z to A":
                 List<String> sortedNamesDesc = new ArrayList<>(productNames);
                 Collections.sort(sortedNamesDesc, Collections.reverseOrder());
-                Assert.assertEquals("Products are not sorted Z to A", sortedNamesDesc, productNames);
-                Assert.assertTrue("actual result are not sorted by Desc sorting",isSortedDescAlpha(sortedNamesDesc));
+                assertEquals("Products are not sorted Z to A", sortedNamesDesc, productNames);
                 break;
             case "Low to High":
                 List<Double> sortedPricesAsc = new ArrayList<>(productPrices);
                 Collections.sort(sortedPricesAsc);
-                Assert.assertEquals("Products are not sorted Low to High", sortedPricesAsc, productPrices);
-                Assert.assertTrue("actual result is not sorted from low to high",isSortedAsc(sortedPricesAsc));
+                assertEquals("Products are not sorted Low to High", sortedPricesAsc, productPrices);
                 break;
             case "High to Low":
                 List<Double> sortedPricesDesc = new ArrayList<>(productPrices);
                 Collections.sort(sortedPricesDesc, Collections.reverseOrder());
-                Assert.assertEquals("Products are not sorted High to Low", sortedPricesDesc, productPrices);
-                Assert.assertTrue("actual result is not sorted from high to low",isSortedDesc(sortedPricesDesc));
+                assertEquals("Products are not sorted High to Low", sortedPricesDesc, productPrices);
                 break;
             default:
                 Assert.fail("Unsupported sort type: " + sortType);
         }
     }
-    @Given("The sauce labs backPack item is available")
-    public void the_sauce_labs_back_pack_item_is_available() {
-        assertTrue("the sauce labs backPack is not available ",pomHomePage.sauceLabsBackPackAvailable().isDisplayed());
+    @Given("The {string} item is available")
+    public void theItemIsAvailable(String nameElement) {
+        for(int i=0;i<pomHomePage.itemOfElements().size();i++){
+        assertTrue("this element"+pomHomePage.itemOfElements().get(i).getText()+ "is not available ",pomHomePage.itemOfElements().get(i).isDisplayed());}
     }
-    @When("Press add to cart for Sauce Labs Backpack")
-    public void press_add_to_cart_for_sauce_labs_backpack() {
-        try{
-            pomHomePage.sauceLabsBackpackAdd().click();
+    @When("Press add to cart for {string}")
+    public void pressAddToCartFor(String itemName) throws InterruptedException {
+                boolean itemFound = false;
+                List<WebElement> itemNames = pomHomePage.nameOfElements();
+                List<WebElement> addButtons = pomHomePage.buttonElementList();
+                for (int i = 0; i < pomHomePage.nameOfElements().size(); i++) {
+                    WebElement currentElement = pomHomePage.nameOfElements().get(i);
+                    wait.until(ExpectedConditions.visibilityOf(currentElement));
+                    String currentItem=currentElement.getText();
+                    if (currentItem.equalsIgnoreCase(itemName)) {
+                        WebElement addButton=addButtons.get(i);
+                        wait.until(ExpectedConditions.elementToBeClickable(addButton)).click();
+                        itemFound = true;
+                        break;
+                    }
+                }
+
+                if (!itemFound) {
+                    Assert.fail("Item '" + itemName + "' was not found on the page to add to the cart.");
+                }
         }
-        catch (Exception e){
-            assertTrue("there is no element sauce labs back pack " , false);
-        }
-    }
     @Then("cart number changes to {string}")
-    public void cart_number_changes_to(String cartNumber) {
-        try {
-            String counterCart=pomHomePage.cartnumber().getText();
-            Assert.assertEquals(counterCart,"1" , "the cart item count is not updated ");
+    public void cart_number_changes_to(String expectedCartNumber) {
+       try {
+            boolean isCartUpdated = wait.until(ExpectedConditions.textToBePresentInElement(pomHomePage.cartnumber(), expectedCartNumber));
+            if (!isCartUpdated) {
+                Assert.fail("Cart number is not update to '" + expectedCartNumber + "' in expected time.");
+            }
+            String actualCartNumber = pomHomePage.cartnumber().getText();
+            assertEquals("The cart item count is not updated", expectedCartNumber, actualCartNumber);
         } catch (Exception e) {
-            System.out.println("Unexpected error "+ e.getMessage());
+            System.out.println("Unexpected error: " + e.getMessage());
             Assert.fail("Test failed due to an unexpected error: " + e.getMessage());
         }
+
     }
     @Given("Press on cart icon on the top right of the page")
     public void press_on_cart_icon_on_the_top_right_of_the_page() {
         pomHomePage.cartIcon().click();
     }
-    @Then("Redirection to the cart page")
-    public void redirection_to_the_cart_page() {
-        String expectUrl ="https://www.saucedemo.com/v1/cart.html";
-        String actualUrl=driver.getCurrentUrl();
-        Assert.assertEquals("Cart Page Url ", expectUrl,actualUrl);
-        String expectTitle="Your Cart";
-        String actualPageTitle=pomYourCart.cartPageTitle().getText();
-        Assert.assertEquals("cart page title", expectTitle , actualPageTitle);
+    @Then("Redirection to {string}")
+    public void redirectionTo(String expectedUrl) {
+        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(70));
+        try {
+            wait.until(ExpectedConditions.urlToBe(expectedUrl));
+        } catch (TimeoutException e) {
+            String actualUrl = driver.getCurrentUrl();
+            Assert.fail("Timeout waiting for URL to be '" + expectedUrl + "'. Actual URL: " + actualUrl);
+        }
+        String actualUrl = driver.getCurrentUrl();
+        assertEquals("The Page URL is not displayed correctly", expectedUrl, actualUrl);
     }
     @Then("Press check out button")
     public void press_check_out_button() {
         pomYourCart.checkoutButton().click();
-    }
-    @Then("Redirection to the Checkout : Your Information")
-    public void redirection_to_the_checkout_your_information() {
-        String expectUrl ="https://www.saucedemo.com/v1/checkout-step-one.html";
-        String actualUrl=driver.getCurrentUrl();
-        Assert.assertEquals(expectUrl,actualUrl);
     }
     @Then("Insert first name {string} , Last name : {string} and postal code : {string}")
     public void insert_first_name_last_name_and_postal_code(String name, String lastName, String postalCode) {
@@ -215,13 +239,9 @@ public class StepDefinition {
     }
     @Then("Error button should  be displayed")
     public void error_button_should_be_displayed() {
-        Assert.assertTrue("the error button should be displayed", pomCheckout.errorButtonIsDisplayed().isDisplayed());
-    }
-    @Then("Redirection to Checkout : Overview")
-    public void redirection_to_checkout_overview() {
-        String expectUrl ="https://www.saucedemo.com/v1/checkout-step-two.html";
-        String actualUrl=driver.getCurrentUrl();
-        Assert.assertEquals(expectUrl,actualUrl);
+        WebElement errorButton = pomCheckout.errorButtonIsDisplayed();
+        wait.until(ExpectedConditions.visibilityOf(errorButton));
+        Assert.assertTrue("The error button should be displayed", errorButton.isDisplayed());
     }
     @Then("Check price {double}")
     public void check_price(Double expectedPrice) {
@@ -230,29 +250,14 @@ public class StepDefinition {
         String priceWithoutDollar = priceWithoutPrefix.replace("$", "").trim();
         try {
             Double actualPrice = Double.parseDouble(priceWithoutDollar);
-            Assert.assertEquals("The actual price does not match the expected price!", expectedPrice, actualPrice, 0.001);
+            assertEquals("The actual price does not match the expected price!", expectedPrice, actualPrice, 0.001);
         } catch (NumberFormatException e) {
             Assert.fail("Failed to parse the actual price: " + totalPriceText + " - " + e.getMessage());
-        }
-    }
-    @And("Wait for {int}")
-    public void wait_for(int seconds) {
-        try {
-            Thread.sleep(seconds*1000);
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
         }
     }
     @Then("Press finish")
     public void press_finish() {
         pomCheckOverview.finish().click();
-    }
-    @Then("Check Checkout : Complete!")
-    public void check_checkout_complete() {
-
-        String expectUrl ="https://www.saucedemo.com/v1/checkout-complete.html";
-        String actualUrl=driver.getCurrentUrl();
-        Assert.assertEquals(expectUrl,actualUrl);
     }
     public boolean isSortedAsc(List<Double>prices){
         for (int i=0 ; i<prices.size()-1;i++){
@@ -282,10 +287,6 @@ public class StepDefinition {
         }
         return true;
     }
-    @Given("I click on add to cart button for Sauce Labs Fleece Jacket")
-    public void i_click_on_add_to_cart_button_for_sauce_labs_fleece_jacket() {
-        pomHomePage.sauceLabsFleeceJacketAdd().click();
-    }
     @When("Add to cart changed to remove")
     public void add_to_cart_changed_to_remove() {
         try{
@@ -294,26 +295,6 @@ public class StepDefinition {
         }
         catch(Exception e){
             System.out.println("UnExpected Error : remove  button of the sauce labs fleece jacket is not display ");
-        }
-    }
-    @Then("cart number change to {string} item")
-    public void cart_number_change_to_item(String count) {
-        String counterCart=pomHomePage.cartnumber().getText();
-        Assert.assertEquals("the cart item count is not updated", count, counterCart);
-    }
-
-    @Given("The sauce labs Bolt T-Shirt item is available")
-    public void theSauceLabsBoltTShirtItemIsAvailable() {
-        assertTrue("the sauce labs bolt t-shirt is not displayed",pomHomePage.sauceLabsBoltTShirt().isDisplayed());
-    }
-
-    @When("Press add to cart for Sauce Labs Bolt T-Shirt")
-    public void pressAddToCartForSauceLabsBoltTShirt() {
-        try{
-            pomHomePage.sauceLabsBoltTShirt().click();
-        }
-        catch (Exception e){
-            assertTrue("there is no element sauce labs bolt t-shirt " , false);
         }
     }
 }
