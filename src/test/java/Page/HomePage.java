@@ -4,6 +4,8 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 
+import java.util.List;
+
 public class HomePage {
     WebDriver driver=null;
     public HomePage(WebDriver driver){
@@ -67,13 +69,14 @@ public class HomePage {
         return driver.findElement(By.xpath("//div[text()=\"Sauce Labs Bike Light\"]//parent::a//parent::div//following-sibling::div[@class='pricebar']//following::div[1]//child::button"));
 
     }
-    public WebElement sauceLabsBackpackImg(){
-        return driver.findElement(By.xpath("//*[@id=\"item_4_img_link\"]/img"));
-
+    public List<WebElement> buttonElementList() {
+        return driver.findElements(By.xpath("//button[@class='btn_primary btn_inventory']"));
     }
-    public WebElement sauceLabsBikeLightAdd(){
-        return driver.findElement(By.xpath("//div[text()='Sauce Labs Bike Light']//parent::a//parent::div[@class='inventory_item_label']//following-sibling::div[@class='pricebar']//child::button"));
-
+    public List<WebElement> nameOfElements(){
+        return driver.findElements(By.xpath("//div[@class='inventory_item_name']"));
+    }
+    public List<WebElement> itemOfElements(){
+        return driver.findElements(By.xpath("//div[@class='inventory_item']"));
     }
     public WebElement sauceLabsBoltTShirtAdd(){
         return driver.findElement(By.xpath("//*[@id=\"inventory_container\"]/div/div[3]/div[3]/button"));
@@ -94,18 +97,4 @@ public class HomePage {
         return driver.findElement(By.xpath("//*[@id=\"shopping_cart_container\"]/a"));
 
     }
-
-    public WebElement firstProductPrice(){
-        return driver.findElement(By.xpath("//*[@id=\"inventory_container\"]/div/div[1]/div[3]//div[contains(@class,'inventory_item_price')]"));
-
-    }
-    public WebElement secondProductPrice(){
-        return driver.findElement(By.xpath("//*[@id=\"inventory_container\"]/div/div[2]/div[3]/div"));
-
-    }
-    public WebElement thirdProductPrice(){
-        return driver.findElement(By.xpath("//*[@id=\"inventory_container\"]/div/div[3]/div[3]/div"));
-
-    }
-
 }
