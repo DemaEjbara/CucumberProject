@@ -1,4 +1,4 @@
-package DefinitionSteps.Helpers;
+package Helpers;
 
 public class DriverInitlization {
 }
