@@ -1,9 +1,8 @@
 Feature: Verify that the existing problems in swag labs website
   Background:
-    Given Open the Swag Labs Website
     When Enter  "problem_user" in the username field on Login Screen
     And Enter  "secret_sauce" in the password field on Login Screen
-    And Press the login button
+    And Press on "login" button
     Then Successful Login
 
   Scenario: adding the Sauce Labs Fleece Jacket item to the cart

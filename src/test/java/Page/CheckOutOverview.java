@@ -19,7 +19,7 @@ public class CheckOutOverview {
     public WebElement totalPrice(){
         return  driver.findElement(By.xpath("//*[@id=\"checkout_summary_container\"]/div/div[2]/div[7]"));
     }
-    public WebElement finish(){
+    public WebElement finishButton(){
         return driver.findElement(By.xpath("//*[@id=\"checkout_summary_container\"]/div/div[2]/div[8]/a[2]"));
     }
 }

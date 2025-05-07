@@ -17,8 +17,9 @@ import java.time.Duration;
 import java.util.*;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import utils.locatorUtil;
 public class StepDefinition {
-   WebDriverWait wait=new WebDriverWait(driver, Duration.ofSeconds(30));
+    static WebDriverWait  wait;
     public static WebDriver driver ;
     HomePage pomHomePage ;
     YourCart pomYourCart ;
@@ -46,11 +47,14 @@ public class StepDefinition {
         );
         System.out.println("Launching Chrome with options: " + options);
         driver = new ChromeDriver(options);
+        wait=new WebDriverWait(driver, Duration.ofSeconds(30));
+
         return driver;
     }
     @Before
     public void setupScenario() {
         driver = setupWebDriver();
+        open_the_swag_labs_website();
     }
     @After
     public void teardownScenario() {
@@ -58,7 +62,6 @@ public class StepDefinition {
             driver.quit();
         }
     }
-    @Given("Open the Swag Labs Website")
     public void open_the_swag_labs_website() {
         pomHomePage = new HomePage(driver);
         pomYourCart = new YourCart(driver);
@@ -77,10 +80,6 @@ public class StepDefinition {
     public void enter_in_the_password_field_on_login_screen(String password) {
         pomLoginPage.passWord().sendKeys(password);
     }
-    @And("Press the login button")
-    public void press_the_login_button() {
-        pomLoginPage.loginButton().click();
-    }
     @Then("Successful Login")
     public void successful_login() {
         try{
@@ -90,11 +89,6 @@ public class StepDefinition {
         }
     catch(Exception e){
         System.out.println("Unexpected Error :" +e.getMessage());}
-    }
-    @Given("Press the sorting drop down")
-    public void press_the_sorting_drop_down() {
-        wait.until(ExpectedConditions.visibilityOfAllElements(pomHomePage.itemOfElements()));
-        pomHomePage.sortingDropDown().click();
     }
     @When("User choose name {string}")
     public void user_choose_name(String type) {
@@ -146,21 +140,26 @@ public class StepDefinition {
                 List<String> sortedNamesAsc = new ArrayList<>(productNames);
                 Collections.sort(sortedNamesAsc);
                 assertEquals("Products are not sorted A to Z", sortedNamesAsc, productNames);
+                Assert.assertTrue("actual result are not sorted by Asc sorting",isSortedAscAlpha(sortedNamesAsc));
+
                 break;
             case "Z to A":
                 List<String> sortedNamesDesc = new ArrayList<>(productNames);
-                Collections.sort(sortedNamesDesc, Collections.reverseOrder());
+                sortedNamesDesc.sort(Collections.reverseOrder());
                 assertEquals("Products are not sorted Z to A", sortedNamesDesc, productNames);
+                Assert.assertTrue("actual result are not sorted by Asc sorting",isSortedDescAlpha(sortedNamesDesc));
                 break;
             case "Low to High":
                 List<Double> sortedPricesAsc = new ArrayList<>(productPrices);
                 Collections.sort(sortedPricesAsc);
                 assertEquals("Products are not sorted Low to High", sortedPricesAsc, productPrices);
+                Assert.assertTrue("actual result are not sorted by Asc sorting",isSortedAsc(sortedPricesAsc));
                 break;
             case "High to Low":
                 List<Double> sortedPricesDesc = new ArrayList<>(productPrices);
-                Collections.sort(sortedPricesDesc, Collections.reverseOrder());
+                sortedPricesDesc.sort(Collections.reverseOrder());
                 assertEquals("Products are not sorted High to Low", sortedPricesDesc, productPrices);
+                Assert.assertTrue("actual result are not sorted by Asc sorting",isSortedDesc(sortedPricesDesc));
                 break;
             default:
                 Assert.fail("Unsupported sort type: " + sortType);
@@ -171,10 +170,17 @@ public class StepDefinition {
         for(int i=0;i<pomHomePage.itemOfElements().size();i++){
         assertTrue("this element"+pomHomePage.itemOfElements().get(i).getText()+ "is not available ",pomHomePage.itemOfElements().get(i).isDisplayed());}
     }
+
+    /**
+     * Example of method documentation
+     * @param itemName
+     */
     @When("Press add to cart for {string}")
-    public void pressAddToCartFor(String itemName) throws InterruptedException {
+    public void pressAddToCartFor(String itemName) {
                 boolean itemFound = false;
-                List<WebElement> itemNames = pomHomePage.nameOfElements();
+                /*
+                Example of documentation for List
+                 */
                 List<WebElement> addButtons = pomHomePage.buttonElementList();
                 for (int i = 0; i < pomHomePage.nameOfElements().size(); i++) {
                     WebElement currentElement = pomHomePage.nameOfElements().get(i);
@@ -182,7 +188,7 @@ public class StepDefinition {
                     String currentItem=currentElement.getText();
                     if (currentItem.equalsIgnoreCase(itemName)) {
                         WebElement addButton=addButtons.get(i);
-                        wait.until(ExpectedConditions.elementToBeClickable(addButton)).click();
+                        wait.until(ExpectedConditions.elementToBeClickable(addButton)).click(); //Example of line documentation
                         itemFound = true;
                         break;
                     }
@@ -192,6 +198,7 @@ public class StepDefinition {
                     Assert.fail("Item '" + itemName + "' was not found on the page to add to the cart.");
                 }
         }
+
     @Then("cart number changes to {string}")
     public void cart_number_changes_to(String expectedCartNumber) {
        try {
@@ -205,38 +212,30 @@ public class StepDefinition {
             System.out.println("Unexpected error: " + e.getMessage());
             Assert.fail("Test failed due to an unexpected error: " + e.getMessage());
         }
+    }
 
-    }
-    @Given("Press on cart icon on the top right of the page")
-    public void press_on_cart_icon_on_the_top_right_of_the_page() {
-        pomHomePage.cartIcon().click();
-    }
-    @Then("Redirection to {string}")
-    public void redirectionTo(String expectedUrl) {
+        @Then("Redirection to {string} and contains title {string}")
+    public void redirectionTo(String expectedUrl ,String expectedTitle) {
         WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(70));
+        By locator = locatorUtil.getLocater(expectedTitle);
         try {
             wait.until(ExpectedConditions.urlToBe(expectedUrl));
         } catch (TimeoutException e) {
             String actualUrl = driver.getCurrentUrl();
             Assert.fail("Timeout waiting for URL to be '" + expectedUrl + "'. Actual URL: " + actualUrl);
         }
+        boolean isTextPresent = wait.until(ExpectedConditions.textToBe(locator, expectedTitle));
+        Assert.assertTrue("Expected title text was not found on the page.", isTextPresent);
         String actualUrl = driver.getCurrentUrl();
         assertEquals("The Page URL is not displayed correctly", expectedUrl, actualUrl);
     }
-    @Then("Press check out button")
-    public void press_check_out_button() {
-        pomYourCart.checkoutButton().click();
-    }
-    @Then("Insert first name {string} , Last name : {string} and postal code : {string}")
-    public void insert_first_name_last_name_and_postal_code(String name, String lastName, String postalCode) {
-        pomCheckout.firstnameField().sendKeys(name);
-        pomCheckout.lastnameField().sendKeys(lastName);
-        pomCheckout.postalCodeField().sendKeys(postalCode);
-    }
-    @Then("Click Continue")
-    public void click_continue() {
-        pomCheckout.continueButton().click();
-    }
+//    @Then("Insert first name {string} , Last name : {string} and postal code : {string}")
+//    public void insert_first_name_last_name_and_postal_code(String name, String lastName, String postalCode) {
+//        pomCheckout.firstnameField().sendKeys(name);
+//        pomCheckout.lastnameField().sendKeys(lastName);
+//        pomCheckout.postalCodeField().sendKeys(postalCode);
+//    }
+
     @Then("Error button should  be displayed")
     public void error_button_should_be_displayed() {
         WebElement errorButton = pomCheckout.errorButtonIsDisplayed();
@@ -249,15 +248,11 @@ public class StepDefinition {
         String priceWithoutPrefix = totalPriceText.replace("Total: ", "").trim();
         String priceWithoutDollar = priceWithoutPrefix.replace("$", "").trim();
         try {
-            Double actualPrice = Double.parseDouble(priceWithoutDollar);
+            double actualPrice = Double.parseDouble(priceWithoutDollar);
             assertEquals("The actual price does not match the expected price!", expectedPrice, actualPrice, 0.001);
         } catch (NumberFormatException e) {
             Assert.fail("Failed to parse the actual price: " + totalPriceText + " - " + e.getMessage());
         }
-    }
-    @Then("Press finish")
-    public void press_finish() {
-        pomCheckOverview.finish().click();
     }
     public boolean isSortedAsc(List<Double>prices){
         for (int i=0 ; i<prices.size()-1;i++){
@@ -297,4 +292,72 @@ public class StepDefinition {
             System.out.println("UnExpected Error : remove  button of the sauce labs fleece jacket is not display ");
         }
     }
+    @When("Press on {string} button")
+    public void pressOnButton(String key) {
+        By locator = locatorUtil.getLocater(key);
+        WebElement button = wait.until(ExpectedConditions.elementToBeClickable(locator));
+        button.click();
+
+//        switch (nameButton){
+//            case "login":
+//                pomLoginPage.loginButton().click();
+//                break;
+//            case "cart icon" :
+//                pomHomePage.cartIcon().click();
+//                break;
+//            case "sorting drop down":
+//                wait.until(ExpectedConditions.visibilityOfAllElements(pomHomePage.itemOfElements()));
+//                pomHomePage.sortingDropDown().click();
+//                break;
+//            case "check out" :
+//                pomYourCart.checkoutButton().click();
+//                break;
+//            case "continue" :
+//                pomCheckout.continueButton().click();
+//                break;
+//            case "finish" :
+//                pomCheckOverview.finishButton().click();
+//                break;
+//        }
+    }
+//    @When("Press on {string} button")
+//    public void pressONButton (String nameButton){
+//        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(30));
+//        Map<String, WebElement> buttons = Map.of(
+//                "login", pomLoginPage.loginButton(),
+//                "cart icon", pomHomePage.cartIcon(),
+//                "check out", pomYourCart.checkoutButton(),
+//                "continue", pomCheckout.continueButton(),
+//                "finish", pomCheckOverview.finishButton()
+//        );
+//        if ("sorting drop down".equals(nameButton)) {
+//            wait.until(ExpectedConditions.visibilityOfAllElements(pomHomePage.itemOfElements()));
+//            pomHomePage.sortingDropDown().click();
+//        } else if (buttons.containsKey(nameButton)) {
+//            WebElement button = buttons.get(nameButton);
+//            wait.until(ExpectedConditions.elementToBeClickable(button));
+//            button.click();
+//        }
+//    }
+
+    /**
+     * THis Method....
+     * @param text
+     * @param fieldKey
+     */
+    @Then("Insert {string} into {string}")
+public void sendKeys(String text, String fieldKey) {
+    By locator = locatorUtil.getLocater(fieldKey);
+    WebElement field = wait.until(ExpectedConditions.visibilityOfElementLocated(locator));
+    field.clear();
+    field.sendKeys(text);
+   // WebElement f=wait.until(ExpectedConditions.textToBe(locator,expectedTitle));
 }
+
+    }
+
+
+
+
+
+
