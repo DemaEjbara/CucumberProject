@@ -25,7 +25,8 @@ Feature: Complete purchase of single item
 
   Scenario: verify that the cart icon is clickable
     Given Press on "cartIcon" button
-    Then Redirection to "https://www.saucedemo.com/v1/cart.html" and contains title "pageTitleCart"
+    Then Redirection to "https://www.saucedemo.com/v1/cart.html"
+    And this page should contains title as "pageTitleCart"
 
   Scenario: verify that the check out button which located in cart page is clickable
     Given Press on "cartIcon" button
@@ -78,11 +79,3 @@ Feature: Complete purchase of single item
     Then Redirection to "https://www.saucedemo.com/v1/checkout-step-two.html"
     And Press on "finish" button
     And Redirection to "https://www.saucedemo.com/v1/checkout-complete.html"
-
-
-
-
-
-
-
-
